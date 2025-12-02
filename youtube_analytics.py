@@ -83,6 +83,48 @@ def get_video_ids(youtube, playlist_id):
     
 video_ids = get_video_ids(youtube, playlist_id)
 
+##Theoretical Function to get most watched videos
+def get_most_watched_videos(api_key, max_results=50):
+    youtube = build('youtube', 'v3', developerKey=api_key)
+
+    # Get videos in the "most popular" category for the past 24 hours
+    request = youtube.videos().list(
+        part='snippet,statistics',  # Include 'statistics' to get viewCount and likeCount
+        chart='mostPopular',
+        regionCode='US',  
+        maxResults=max_results
+    )
+
+    response = request.execute()
+
+    # Extract the title, link, viewCount, and likeCount of each video
+    videos = []
+    for item in response['items']:
+        title = item['snippet']['title']
+        video_id = item['id']
+        video_url = f'https://www.youtube.com/watch?v={video_id}'
+        view_count = item['statistics']['viewCount']
+        like_count = item['statistics']['likeCount']
+        
+        videos.append({
+            'title': title,
+            'url': video_url,
+            'views': view_count,
+            'likes': like_count            
+        })
+
+    return videos
+
+if __name__ == '__main__':
+    most_watched_videos = get_most_watched_videos(api_key)
+
+    # Display the most watched videos with view count and like count
+    print("Most Watched Videos in the Past 24 Hours:")
+    for idx, video in enumerate(most_watched_videos, start=1):
+        print(f"{idx}. {video['title']}")
+        print(f"   Link: {video['url']}")
+        print(f"   Views: {video['views']}")
+        print(f"   Likes: {video['likes']}\n")
 
 ## Function to get video details
 def get_video_details(youtube, video_ids):
